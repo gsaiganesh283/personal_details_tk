@@ -1,0 +1,6 @@
+{
+    "version": "1.1.1",
+    "download_url": "",
+    "notes": "Fixes Documents (and any other table) staying empty when records exist on the website but were never pulled. Includes 1.1.0: new dashboard design with 12 themes, Scan Documents (scanner/printer) with saved locations and upload slots, link documents to any module or folder, automatic expiry notifications, backup & restore, auto-lock, Excel/CSV export, command palette (Ctrl+K).",
+    "published_at": "2026-10-09"
+}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1b1c22">
+<title>Offline | Personal Details Saver</title>
+<style>
+    :root { color-scheme: dark; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+        height: 100%;
+        background: #1b1c22;
+        color: #e9e9ee;
+        font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        text-align: center;
+    }
+    .card {
+        max-width: 360px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+    img {
+        width: 72px;
+        height: 72px;
+        border-radius: 16px;
+    }
+    h1 {
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+    p {
+        font-size: 0.9rem;
+        color: #a2a5b3;
+        line-height: 1.5;
+    }
+    button {
+        margin-top: 8px;
+        padding: 10px 22px;
+        border-radius: 999px;
+        border: none;
+        background: #8b83ff;
+        color: #ffffff;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    button:active { opacity: 0.85; }
+</style>
+</head>
+<body>
+    <div class="card">
+        <img src="assets/icons/icon-96.png" alt="">
+        <h1>You're offline</h1>
+        <p>Personal Details Saver needs a connection to show your data securely -- nothing is stored on this device for offline viewing.</p>
+        <button onclick="location.reload()">Try again</button>
+    </div>
+</body>
+</html>

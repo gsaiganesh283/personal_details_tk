@@ -1,0 +1,9 @@
+# ==========================================================================
+# This repository tracks ONLY the website/ folder.
+# Everything else at the project root (the Python desktop app, build output,
+# local database, the spreadsheet, installer, venvs, etc.) is ignored.
+# Secrets *inside* website/ are additionally excluded by website/.gitignore.
+# ==========================================================================
+/*
+!/.gitignore
+!/website/

@@ -1,0 +1,12 @@
+{
+    "name": "gsaiganesh/personal-details-saver",
+    "description": "A web and mobile-responsive PHP application for saving personal details with custom fields",
+    "version": "1.0.0",
+    "scripts": {
+        "start": "php -S localhost:8000 -t .",
+        "setup-db": "mysql -u root < sql/schema.sql"
+    },
+    "require": {
+        "lbuchs/webauthn": "^2.2"
+    }
+}

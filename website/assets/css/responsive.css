@@ -1,0 +1,358 @@
+/* =============================================
+   Responsive Styles - Mobile First
+   ============================================= */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .sidebar-overlay {
+        display: block;
+        pointer-events: none;
+    }
+
+    .sidebar-overlay.active {
+        pointer-events: auto;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+    }
+
+    .menu-toggle {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .search-box input {
+        width: 150px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .details-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 280px;
+    }
+
+    .mobile-nav {
+        display: flex;
+    }
+
+    .content-area {
+        padding: 20px 16px;
+        padding-bottom: calc(var(--mobile-nav-height) + 20px);
+    }
+
+    .topbar {
+        padding: 0 16px;
+    }
+
+    .search-box {
+        display: none;
+    }
+
+    .topbar-datetime {
+        font-size: 0.75rem;
+        gap: 5px;
+        padding: 5px 10px;
+    }
+
+    .notification-dropdown {
+        width: calc(100vw - 32px);
+        right: -60px;
+    }
+
+    .topbar-title h1 {
+        font-size: 1.1rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .stat-card {
+        padding: 18px;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .toolbar-left,
+    .toolbar-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .auth-card {
+        padding: 28px 20px;
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    .auth-header h1 {
+        font-size: 1.4rem;
+    }
+
+    .auth-container {
+        max-width: 100%;
+        padding: 16px;
+        overflow-x: auto;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        overflow: visible;
+    }
+
+    .modal {
+        width: 95%;
+        max-height: 85vh;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 18px;
+    }
+
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 24px 18px;
+    }
+
+    .profile-meta {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 10px 12px;
+        font-size: 0.82rem;
+    }
+
+    .toast-container {
+        top: auto;
+        bottom: calc(var(--mobile-nav-height) + 10px);
+        right: 10px;
+        left: 10px;
+    }
+
+    .toast {
+        min-width: auto;
+    }
+
+    .tabs {
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab-btn {
+        white-space: nowrap;
+        padding: 10px 16px;
+        font-size: 0.82rem;
+    }
+
+    .pagination .page-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 0.8rem;
+    }
+
+    .social-btns {
+        flex-direction: column;
+    }
+
+    .btn-lg {
+        padding: 14px 24px;
+        font-size: 0.95rem;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+    html {
+        font-size: 15px;
+    }
+
+    .topbar-datetime .topbar-day,
+    .topbar-datetime .topbar-day::after {
+        display: none;
+    }
+
+    .topbar-datetime {
+        font-size: 0.72rem;
+        gap: 4px;
+        padding: 4px 8px;
+    }
+
+    .auth-container {
+        padding: 10px;
+        overflow-x: auto;
+    }
+
+    .auth-card {
+        padding: 20px 14px;
+        border-radius: var(--radius-lg);
+        overflow-y: visible;
+    }
+
+    .auth-logo {
+        width: 56px;
+        height: 56px;
+        font-size: 22px;
+    }
+
+    .stat-icon {
+        width: 46px;
+        height: 46px;
+        font-size: 1.1rem;
+    }
+
+    .stat-info h3 {
+        font-size: 1.3rem;
+    }
+
+    .detail-card {
+        padding: 16px;
+    }
+
+    .detail-avatar {
+        width: 42px;
+        height: 42px;
+    }
+
+    .confirm-actions {
+        flex-direction: column;
+    }
+
+    .confirm-actions .btn {
+        width: 100%;
+    }
+}
+
+/* Landscape phones */
+@media (max-height: 500px) and (orientation: landscape) {
+    .auth-page {
+        padding: 10px 0;
+        align-items: flex-start;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .auth-card {
+        padding: 16px;
+    }
+
+    .auth-logo {
+        display: none;
+    }
+
+    .auth-header {
+        margin-bottom: 16px;
+    }
+
+    .form-group {
+        margin-bottom: 12px;
+    }
+}
+
+/* PWA / Safe area padding */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .mobile-nav {
+        padding-bottom: env(safe-area-inset-bottom);
+        height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
+    }
+
+    .content-area {
+        padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + 20px);
+    }
+}
+
+/* Print styles */
+@media print {
+    .sidebar,
+    .mobile-nav,
+    .topbar,
+    .toast-container,
+    .modal-overlay {
+        display: none !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+    }
+
+    body {
+        background: white;
+        color: black;
+    }
+
+    .card {
+        border: 1px solid #ddd;
+        box-shadow: none;
+    }
+}
+
+/* Hover media query for touch devices */
+@media (hover: none) {
+    .stat-card:hover,
+    .detail-card:hover {
+        transform: none;
+    }
+
+    .btn:hover {
+        transform: none;
+    }
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -1,0 +1,34 @@
+# ==========================================================================
+# Secrets & credentials -- MUST never be committed. The whole config/ folder
+# is ignored except the harmless version file; everything in it (DB password,
+# OAuth client secrets, Google Drive tokens, SMTP credentials, desktop-sync
+# secret) is sensitive.
+# ==========================================================================
+config/*
+!config/app-version.json
+
+# Full MySQL data dump of the live site (real personal/financial data).
+Backup/
+*.sql.gz
+Backup.sql
+
+# User-uploaded files (documents, custom-field attachments) -- real personal data.
+uploads/
+
+# Logs
+error.log
+*.log
+
+# Dependencies / vendored tooling (restored via composer, not tracked).
+vendor/
+composer.phar
+
+# Runtime / server
+.user.ini
+
+# Editor / OS
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
