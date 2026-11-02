@@ -11,5 +11,5 @@
 # DEPLOY_FROM_GIT.md, section B -- git-fix.php / reset --hard).
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/qbgdvqgo/pds/
+    - export DEPLOYPATH=/home/qbgdvqgo/public_html/pds
     - /bin/echo "Deployed to $DEPLOYPATH"
