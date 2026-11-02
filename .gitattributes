@@ -1,0 +1,18 @@
+# Normalize line endings: store text files as LF in the repo so the server's
+# checkout no longer shows phantom "local changes" from CRLF differences.
+* text=auto
+
+# Binary files -- never touch their bytes.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.svg  text
+*.pdf  binary
+*.phar binary
+*.zip  binary
+*.woff  binary
+*.woff2 binary
+*.ttf  binary
+*.eot  binary

@@ -8,27 +8,27 @@ config/*
 !config/app-version.json
 
 # Full MySQL data dump of the live site (real personal/financial data).
-# Backup/
-# *.sql.gz
-# Backup.sql
+Backup/
+*.sql.gz
+Backup.sql
 
 # User-uploaded files (documents, custom-field attachments) -- real personal data.
-# uploads/
+uploads/
 
 # Logs
-# error.log
-# *.log
+error.log
+*.log
 
 # Dependencies / vendored tooling (restored via composer, not tracked).
-# vendor/
-# composer.phar
+vendor/
+composer.phar
 
 # Runtime / server
-# .user.ini
+.user.ini
 
 # Editor / OS
-# .vscode/
-# *.swp
-# *.swo
-# .DS_Store
-# Thumbs.db
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
