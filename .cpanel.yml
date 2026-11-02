@@ -1,0 +1,15 @@
+---
+# cPanel deployment configuration.
+#
+# This repository is checked out directly in the site's document root
+# (/home/qbgdvqgo/pds), so after cPanel checks out HEAD the files are already
+# live -- there is nothing to copy. These tasks simply let the "Deploy HEAD
+# Commit" button succeed and print where it deployed.
+#
+# NOTE: Deploy also requires a CLEAN working tree ("no uncommitted changes").
+# If Deploy/Pull reports local changes, clear them first (see
+# DEPLOY_FROM_GIT.md, section B -- git-fix.php / reset --hard).
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/qbgdvqgo/pds/
+    - /bin/echo "Deployed to $DEPLOYPATH"
