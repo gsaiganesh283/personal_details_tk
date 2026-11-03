@@ -86,6 +86,9 @@ function actionButtonFilterDefaults() {
         'builtin' => ['type' => false, 'month' => false, 'dates' => false, 'amount' => false, 'group' => false],
         'map' => ['date_field' => null, 'amount_field' => null, 'type_field' => null, 'dir_field' => null, 'out_value' => ''],
         'builtin_dashboard' => ['count' => false, 'in' => false, 'out' => false, 'net' => false],
+        // Default filter values applied when the record list first opens.
+        'default_month' => 'current', // 'current' | 'all'
+        'default_group' => false,
         'presets' => [],
     ];
 }

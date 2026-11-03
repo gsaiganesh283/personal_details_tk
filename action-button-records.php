@@ -96,8 +96,13 @@ switch ($action) {
                     if ($mk !== '') $monthsPresent[$mk] = date('M Y', strtotime($mk . '-01'));
                 }
             }
+            // Always offer the current month so the "current" default is
+            // selectable even with no data in it yet.
+            $currentMonthKey = date('Y-m');
+            if (!isset($monthsPresent[$currentMonthKey])) $monthsPresent[$currentMonthKey] = date('M Y');
             ksort($typesPresent);
             krsort($monthsPresent);
+            $defaultMonthKey = (($cfg['default_month'] ?? 'current') === 'current') ? $currentMonthKey : '';
             $bd = $cfg['builtin_dashboard'];
             $anyDash = $bd['count'] || $bd['in'] || $bd['out'] || $bd['net'];
             ?>
@@ -126,7 +131,7 @@ switch ($action) {
                     <?php if ($show('month')): ?>
                     <div class="form-group" style="margin:0;"><label>Month</label>
                         <select id="abFltMonth"><option value="">All Months</option>
-                            <?php foreach ($monthsPresent as $mk => $ml): ?><option value="<?php echo htmlspecialchars($mk); ?>"><?php echo htmlspecialchars($ml); ?></option><?php endforeach; ?>
+                            <?php foreach ($monthsPresent as $mk => $ml): ?><option value="<?php echo htmlspecialchars($mk); ?>" <?php echo ($mk === $defaultMonthKey) ? 'selected' : ''; ?>><?php echo htmlspecialchars($ml); ?></option><?php endforeach; ?>
                         </select></div>
                     <?php endif; ?>
                     <?php if ($show('dates')): ?>
@@ -142,7 +147,7 @@ switch ($action) {
                     <div class="form-group" style="margin:0;"><label><?php echo htmlspecialchars($ff['field_label']); ?></label><input type="text" class="ab-cf-flt" data-fid="<?php echo (int)$ffid; ?>" style="width:120px;"></div>
                     <?php endforeach; ?>
                     <?php if ($show('group')): ?>
-                    <label style="display:flex; align-items:center; gap:6px; margin:0 0 6px;"><input type="checkbox" id="abFltGroup"> Group by month</label>
+                    <label style="display:flex; align-items:center; gap:6px; margin:0 0 6px;"><input type="checkbox" id="abFltGroup" <?php echo !empty($cfg['default_group']) ? 'checked' : ''; ?>> Group by month</label>
                     <?php endif; ?>
                     <?php if (!empty($cfg['presets'])): ?>
                     <div class="form-group" style="margin:0;"><label>Preset</label>
@@ -277,6 +282,12 @@ switch ($action) {
         <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px;"><input type="checkbox" name="builtin_dashboard[<?php echo $k; ?>]" value="1" <?php echo !empty($cfg['builtin_dashboard'][$k]) ? 'checked' : ''; ?>> <?php echo $label; ?></label>
         <?php endforeach; ?>
 
+        <h4 style="margin:14px 0 6px;">Defaults when the list opens</h4>
+        <?php $dm = ($cfg['default_month'] ?? 'current'); ?>
+        <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px;"><input type="radio" name="default_month" value="current" <?php echo $dm !== 'all' ? 'checked' : ''; ?>> Month = current month</label>
+        <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px;"><input type="radio" name="default_month" value="all" <?php echo $dm === 'all' ? 'checked' : ''; ?>> Month = all months</label>
+        <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px;"><input type="checkbox" name="default_group" value="1" <?php echo !empty($cfg['default_group']) ? 'checked' : ''; ?>> Group by month by default</label>
+
         <h4 style="margin:14px 0 6px;">Filterable fields</h4>
         <?php foreach ($fields as $f): ?>
         <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px;"><input type="checkbox" name="filter_fields[]" value="<?php echo (int)$f['id']; ?>" <?php echo in_array((int)$f['id'], array_map('intval', $cfg['filter_fields']), true) ? 'checked' : ''; ?>> <?php echo htmlspecialchars($f['field_label']); ?> (<?php echo htmlspecialchars($f['field_type']); ?>)</label>
@@ -313,6 +324,8 @@ switch ($action) {
             $cfg['map'][$role] = ($val === '' ? null : (int)$val);
         }
         $cfg['map']['out_value'] = trim((string)($postMap['out_value'] ?? ''));
+        $cfg['default_month'] = (($_POST['default_month'] ?? 'current') === 'all') ? 'all' : 'current';
+        $cfg['default_group'] = !empty($_POST['default_group']);
         setActionButtonFilterConfig($buttonId, $user['id'], $cfg);
         jsonResponse(['success' => true]);
         break;
