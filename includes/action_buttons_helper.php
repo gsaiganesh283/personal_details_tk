@@ -90,6 +90,22 @@ function actionButtonFilterDefaults() {
     ];
 }
 
+// First field matching each role's natural type -- a form-only default offered
+// before the first save (date->Date, number/currency->Amount, select->Type,
+// toggle/checkbox->Direction). Mirrors the desktop dialog's _auto_map().
+function actionButtonAutoMap($fields) {
+    $picks = ['date_field' => null, 'amount_field' => null, 'type_field' => null, 'dir_field' => null];
+    foreach ($fields as $f) {
+        $ft = $f['field_type'];
+        $id = (int)$f['id'];
+        if ($picks['date_field'] === null && in_array($ft, ['date', 'datetime'], true)) $picks['date_field'] = $id;
+        if ($picks['amount_field'] === null && in_array($ft, ['number', 'currency'], true)) $picks['amount_field'] = $id;
+        if ($picks['type_field'] === null && $ft === 'select') $picks['type_field'] = $id;
+        if ($picks['dir_field'] === null && in_array($ft, ['toggle', 'checkbox'], true)) $picks['dir_field'] = $id;
+    }
+    return $picks;
+}
+
 function getActionButtonFilterConfig($buttonId, $userId) {
     ensureActionButtonFilterConfigColumn();
     $db = Database::getInstance();

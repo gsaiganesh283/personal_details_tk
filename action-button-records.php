@@ -222,6 +222,11 @@ switch ($action) {
         $cfg = getActionButtonFilterConfig($buttonId, $user['id']);
         $fields = getCustomFieldsFor($childModule, $user['id']);
         $map = $cfg['map'];
+        // Prefill mapping defaults by field type -- only before the first save,
+        // so a deliberately-saved "(none)" is never overridden afterwards.
+        $rawCfg = $db->fetch("SELECT filter_config FROM action_buttons WHERE id = ? AND user_id = ?", [$buttonId, $user['id']]);
+        $neverSaved = empty($rawCfg['filter_config']);
+        $autoMap = $neverSaved ? actionButtonAutoMap($fields) : [];
         $mapRoles = [
             'date_field' => 'Date field (Month / Date range / Group)',
             'amount_field' => 'Amount field (Amount / In / Out / Net)',
@@ -250,12 +255,15 @@ switch ($action) {
         <?php endforeach; ?>
 
         <h4 style="margin:14px 0 6px;">Field mapping</h4>
-        <?php foreach ($mapRoles as $role => $label): ?>
+        <?php foreach ($mapRoles as $role => $label):
+            $sel = $map[$role] ?? null;
+            if ($sel === null && $neverSaved) $sel = $autoMap[$role] ?? null;
+        ?>
         <div class="form-group" style="margin:0 0 8px;">
             <label><?php echo $label; ?></label>
             <select name="map[<?php echo $role; ?>]">
                 <option value="">(none)</option>
-                <?php foreach ($fields as $f): ?><option value="<?php echo (int)$f['id']; ?>" <?php echo ((int)($map[$role] ?? 0) === (int)$f['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($f['field_label']); ?> (<?php echo htmlspecialchars($f['field_type']); ?>)</option><?php endforeach; ?>
+                <?php foreach ($fields as $f): ?><option value="<?php echo (int)$f['id']; ?>" <?php echo ($sel !== null && (int)$sel === (int)$f['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($f['field_label']); ?> (<?php echo htmlspecialchars($f['field_type']); ?>)</option><?php endforeach; ?>
             </select>
         </div>
         <?php endforeach; ?>
