@@ -442,6 +442,7 @@ foreach ($moduleLabels as $moduleKey => $moduleLabelText) {
         <button class="btn btn-secondary btn-sm" onclick="deleteSelectedButton()"><i class="fas fa-trash"></i> Delete</button>
         <button class="btn btn-secondary btn-sm" onclick="moveSelectedButton(-1)"><i class="fas fa-arrow-up"></i> Move Up</button>
         <button class="btn btn-secondary btn-sm" onclick="moveSelectedButton(1)"><i class="fas fa-arrow-down"></i> Move Down</button>
+        <button class="btn btn-secondary btn-sm" onclick="openButtonFilterConfig()"><i class="fas fa-sliders-h"></i> Filters &amp; Dashboard...</button>
         <button class="btn btn-secondary btn-sm" onclick="manageSelectedButton()"><i class="fas fa-puzzle-piece"></i> Manage Fields &amp; Buttons...</button>
     </div>
 </div>
@@ -899,6 +900,21 @@ foreach ($moduleLabels as $moduleKey => $moduleLabelText) {
         <button class="btn btn-primary" onclick="document.getElementById('addActionButtonForm').submit();">
             <i class="fas fa-plus"></i> Create Action Button
         </button>
+    </div>
+</div>
+
+<!-- Filters & Dashboard config for the selected Action Button -->
+<div class="modal" id="buttonFilterModal" style="max-width: 560px;">
+    <div class="modal-header">
+        <h3><i class="fas fa-sliders-h" style="margin-right: 8px; color: var(--primary);"></i> Filters &amp; Dashboard</h3>
+        <button class="modal-close" onclick="closeModal('buttonFilterModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+        <form id="buttonFilterConfigForm"><div id="buttonFilterBody"><p style="color: var(--text-secondary);">Loading…</p></div></form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('buttonFilterModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveButtonFilterConfig()"><i class="fas fa-save"></i> Save</button>
     </div>
 </div>
 
@@ -1603,6 +1619,34 @@ function moveSelectedButton(direction) {
 function manageSelectedButton() {
     if (!selectedButtonId) { showToast('Select an action button first', 'warning'); return; }
     window.location.href = '<?php echo url('custom-fields.php'); ?>?module=action_btn_' + selectedButtonId;
+}
+
+// Filters & Dashboard config for the selected Action Button -- loads the same
+// form action-button-records.php serves, and saves it back over AJAX.
+function openButtonFilterConfig() {
+    if (!selectedButtonId) { showToast('Select an action button first', 'warning'); return; }
+    var body = document.getElementById('buttonFilterBody');
+    body.innerHTML = '<p style="color: var(--text-secondary);">Loading…</p>';
+    openModal('buttonFilterModal');
+    ajaxRequest('/action-button-records.php?action=filter-config&button_id=' + encodeURIComponent(selectedButtonId),
+        'GET', null, function (res) {
+            if (!res || !res.success) {
+                body.innerHTML = '<p style="color: var(--danger);">' + ((res && res.error) || 'Failed to load') + '</p>';
+                return;
+            }
+            body.innerHTML = res.html;
+        });
+}
+
+function saveButtonFilterConfig() {
+    var form = document.getElementById('buttonFilterConfigForm');
+    if (!form) return;
+    var fd = new FormData(form);
+    ajaxRequest('/action-button-records.php?action=filter-config-save', 'POST', fd, function (res) {
+        if (!res || !res.success) { showToast((res && res.error) || 'Save failed', 'error'); return; }
+        showToast('Filters & dashboard saved', 'success');
+        closeModal('buttonFilterModal');
+    });
 }
 
 // Action Buttons: rename/move/delete — same hidden-form-submit pattern as
