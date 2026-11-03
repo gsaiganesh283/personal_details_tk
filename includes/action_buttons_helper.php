@@ -35,6 +35,7 @@ function ensureActionButtonTables() {
             INDEX idx_parent (user_id, parent_module)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
         ensureActionButtonIconColumn();
+        ensureActionButtonFilterConfigColumn();
 
         $db->query("CREATE TABLE IF NOT EXISTS action_button_records (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -55,6 +56,69 @@ function ensureActionButtonTables() {
 
 function actionButtonModule($buttonId) {
     return 'action_btn_' . (int)$buttonId;
+}
+
+// Self-heal the filter_config column -- mirrors the desktop app's per-button
+// Filters & Dashboard config (app/models/action_buttons.py). Stored as a JSON
+// blob so the whole config travels in one column.
+function ensureActionButtonFilterConfigColumn() {
+    try {
+        if (!dbColumnExists('action_buttons', 'filter_config')) {
+            Database::getInstance()->getConnection()->exec(
+                "ALTER TABLE action_buttons ADD COLUMN filter_config TEXT NULL"
+            );
+        }
+    } catch (Exception $e) {
+        // Best-effort (hosting DB user may lack ALTER) -- buttons just behave
+        // as if no filters are configured.
+    }
+}
+
+// The same default shape the desktop app uses (DEFAULT_FILTER_CONFIG). A
+// generic module has no inherent date/amount/type, so each built-in control is
+// wired to a custom field chosen in "map".
+function actionButtonFilterDefaults() {
+    return [
+        'enabled' => false,
+        'text_search' => true,
+        'filter_fields' => [],
+        'dashboard' => [],
+        'builtin' => ['type' => false, 'month' => false, 'dates' => false, 'amount' => false, 'group' => false],
+        'map' => ['date_field' => null, 'amount_field' => null, 'type_field' => null, 'dir_field' => null, 'out_value' => ''],
+        'builtin_dashboard' => ['count' => false, 'in' => false, 'out' => false, 'net' => false],
+        'presets' => [],
+    ];
+}
+
+function getActionButtonFilterConfig($buttonId, $userId) {
+    ensureActionButtonFilterConfigColumn();
+    $db = Database::getInstance();
+    $row = $db->fetch("SELECT filter_config FROM action_buttons WHERE id = ? AND user_id = ?", [$buttonId, $userId]);
+    $cfg = actionButtonFilterDefaults();
+    if ($row && !empty($row['filter_config'])) {
+        $stored = json_decode($row['filter_config'], true);
+        if (is_array($stored)) {
+            foreach ($stored as $k => $v) {
+                // Merge (don't replace) the nested dicts so a config stored
+                // before a sub-key existed still gets the new default.
+                if (in_array($k, ['builtin', 'map', 'builtin_dashboard'], true) && is_array($v)) {
+                    $cfg[$k] = array_merge($cfg[$k], $v);
+                } else {
+                    $cfg[$k] = $v;
+                }
+            }
+        }
+    }
+    return $cfg;
+}
+
+function setActionButtonFilterConfig($buttonId, $userId, $cfg) {
+    ensureActionButtonFilterConfigColumn();
+    $db = Database::getInstance();
+    $db->update(
+        "UPDATE action_buttons SET filter_config = ? WHERE id = ? AND user_id = ?",
+        [json_encode($cfg), $buttonId, $userId]
+    );
 }
 
 // Belt-and-suspenders self-heal for installs where action_buttons already

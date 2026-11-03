@@ -72,8 +72,190 @@
                     return;
                 }
                 body.innerHTML = res.html;
+                initAbFilters();
             }
         );
+    }
+
+    // --- Client-side Filters & Dashboard for an Action Button's records list.
+    // Mirrors savings-ledger.php's filter script, but driven here because the
+    // list HTML is injected via innerHTML (its own <script> would never run).
+    function initAbFilters() {
+        var table = document.getElementById('abRecordsTable');
+        if (!table || table.getAttribute('data-filters') !== '1') return;
+        var tbody = document.getElementById('abRecordsBody');
+        var cols = parseInt(table.getAttribute('data-cols'), 10) || 1;
+        var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr.ab-rec-row'));
+        var el = function (id) { return document.getElementById(id); };
+        var cfFilters = Array.prototype.slice.call(document.querySelectorAll('.ab-cf-flt'));
+        var f = {
+            search: el('abFltSearch'), type: el('abFltType'), month: el('abFltMonth'),
+            from: el('abFltFrom'), to: el('abFltTo'), min: el('abFltMin'), max: el('abFltMax'),
+            group: el('abFltGroup'), preset: el('abFltPreset')
+        };
+        var money = function (n) { return '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+        var val = function (c) { return c ? c.value : ''; };
+
+        function monthLabel(mk) {
+            var p = mk.split('-');
+            if (p.length < 2) return mk || '(no date)';
+            var d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, 1);
+            return d.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+        }
+
+        function matches(r) {
+            var s = (val(f.search) || '').trim().toLowerCase();
+            if (s && r.getAttribute('data-desc').indexOf(s) === -1) return false;
+            if (val(f.type) && r.getAttribute('data-type') !== f.type.value) return false;
+            if (val(f.month) && r.getAttribute('data-month') !== f.month.value) return false;
+            var date = r.getAttribute('data-date') || '';
+            if (val(f.from) && date < f.from.value) return false;
+            if (val(f.to) && date > f.to.value) return false;
+            var amt = parseFloat(r.getAttribute('data-amount')) || 0;
+            if (f.min && f.min.value !== '' && amt < parseFloat(f.min.value)) return false;
+            if (f.max && f.max.value !== '' && amt > parseFloat(f.max.value)) return false;
+            for (var i = 0; i < cfFilters.length; i++) {
+                var needle = cfFilters[i].value.trim().toLowerCase();
+                if (needle) {
+                    var hay = r.getAttribute('data-cf' + cfFilters[i].getAttribute('data-fid')) || '';
+                    if (hay.indexOf(needle) === -1) return false;
+                }
+            }
+            return true;
+        }
+
+        function apply() {
+            Array.prototype.slice.call(tbody.querySelectorAll('tr.ab-month-header')).forEach(function (h) { h.remove(); });
+            var visible = rows.filter(matches);
+            var totalIn = 0, totalOut = 0;
+            visible.forEach(function (r) {
+                var amt = parseFloat(r.getAttribute('data-amount')) || 0;
+                if (r.getAttribute('data-out') === '1') totalOut += amt; else totalIn += amt;
+            });
+            rows.forEach(function (r) { r.style.display = 'none'; });
+
+            if (f.group && f.group.checked) {
+                var groups = {};
+                visible.forEach(function (r) {
+                    var mk = r.getAttribute('data-month') || '';
+                    (groups[mk] = groups[mk] || []).push(r);
+                });
+                Object.keys(groups).sort().reverse().forEach(function (mk) {
+                    var members = groups[mk], net = 0;
+                    members.forEach(function (r) {
+                        var amt = parseFloat(r.getAttribute('data-amount')) || 0;
+                        net += (r.getAttribute('data-out') === '1' ? -amt : amt);
+                    });
+                    var hdr = document.createElement('tr');
+                    hdr.className = 'ab-month-header';
+                    hdr.innerHTML = '<td colspan="' + cols + '" style="background: var(--bg-secondary, rgba(127,127,127,.12)); font-weight:700;">'
+                        + monthLabel(mk) + ' &middot; Net ' + money(net) + ' &middot; ' + members.length + ' rec</td>';
+                    tbody.appendChild(hdr);
+                    members.forEach(function (r) { r.style.display = ''; tbody.appendChild(r); });
+                });
+            } else {
+                visible.forEach(function (r) { r.style.display = ''; });
+            }
+
+            if (el('abStatCount')) el('abStatCount').textContent = visible.length;
+            if (el('abStatIn')) el('abStatIn').textContent = money(totalIn);
+            if (el('abStatOut')) el('abStatOut').textContent = money(totalOut);
+            if (el('abStatNet')) el('abStatNet').textContent = money(totalIn - totalOut);
+        }
+
+        function gatherState() {
+            return {
+                search: val(f.search), type: val(f.type), month: val(f.month),
+                date_from: val(f.from), date_to: val(f.to),
+                amount_min: val(f.min), amount_max: val(f.max),
+                group: !!(f.group && f.group.checked)
+            };
+        }
+        function applyState(st) {
+            st = st || {};
+            if (f.search) f.search.value = st.search || '';
+            if (f.type) f.type.value = st.type || '';
+            if (f.month) f.month.value = st.month || '';
+            if (f.from) f.from.value = st.date_from || '';
+            if (f.to) f.to.value = st.date_to || '';
+            if (f.min) f.min.value = st.amount_min || '';
+            if (f.max) f.max.value = st.amount_max || '';
+            if (f.group) f.group.checked = !!st.group;
+            apply();
+        }
+        window._abGatherFilterState = gatherState;
+
+        ['input', 'change'].forEach(function (ev) {
+            Object.keys(f).forEach(function (k) { if (f[k]) f[k].addEventListener(ev, apply); });
+            cfFilters.forEach(function (c) { c.addEventListener(ev, apply); });
+        });
+        var clearBtn = el('abFltClear');
+        if (clearBtn) clearBtn.addEventListener('click', function () {
+            applyState({});
+            cfFilters.forEach(function (c) { c.value = ''; });
+            apply();
+        });
+        if (f.preset) f.preset.addEventListener('change', function () {
+            var dataEl = document.getElementById('abPresetData');
+            if (!dataEl || f.preset.value === '') return;
+            try {
+                var presets = JSON.parse(dataEl.textContent || '[]');
+                applyState(presets[parseInt(f.preset.value, 10)]);
+            } catch (e) { /* ignore malformed preset data */ }
+        });
+        apply();
+    }
+
+    function loadFilterConfig() {
+        var frame = currentFrame();
+        if (!frame) return;
+        var body = document.getElementById('actionButtonBody');
+        body.innerHTML = '<p style="color: var(--text-secondary);">Loading…</p>';
+        ajaxRequest(
+            '/action-button-records.php?action=filter-config&button_id=' + encodeURIComponent(frame.buttonId),
+            'GET', null,
+            function (res) {
+                if (!res || !res.success) {
+                    body.innerHTML = '<p style="color: var(--danger);">' + ((res && res.error) || 'Failed to load') + '</p>';
+                    return;
+                }
+                body.innerHTML =
+                    '<form id="abFilterConfigForm">' + res.html + '</form>' +
+                    '<div class="modal-footer" style="padding: 16px 0 0; border-top: none;">' +
+                    '  <button type="button" class="btn btn-secondary" data-ab-cancel="1"><i class="fas fa-arrow-left"></i> Back</button>' +
+                    '  <button type="button" class="btn btn-primary" data-ab-config-save="1"><i class="fas fa-save"></i> Save</button>' +
+                    '</div>';
+            }
+        );
+    }
+
+    function saveFilterConfig() {
+        var form = document.getElementById('abFilterConfigForm');
+        if (!form) return;
+        var fd = new FormData(form);
+        ajaxRequest('/action-button-records.php?action=filter-config-save', 'POST', fd, function (res) {
+            if (!res || !res.success) {
+                showToast((res && res.error) || 'Save failed', 'error');
+                return;
+            }
+            showToast('Saved', 'success');
+            loadList();
+        });
+    }
+
+    function savePreset(buttonId) {
+        var state = window._abGatherFilterState ? window._abGatherFilterState() : {};
+        var name = window.prompt('Name this filter preset:');
+        if (!name) return;
+        var fd = new FormData();
+        fd.append('button_id', buttonId);
+        fd.append('name', name);
+        fd.append('state', JSON.stringify(state));
+        ajaxRequest('/action-button-records.php?action=preset-save', 'POST', fd, function (res) {
+            if (!res || !res.success) { showToast((res && res.error) || 'Save failed', 'error'); return; }
+            showToast('Preset saved', 'success');
+            loadList();
+        });
     }
 
     function loadForm(editId) {
@@ -190,6 +372,15 @@
 
         var saveBtn = e.target.closest('[data-ab-save]');
         if (saveBtn) { saveForm(); return; }
+
+        var configBtn = e.target.closest('[data-ab-config]');
+        if (configBtn) { loadFilterConfig(); return; }
+
+        var configSaveBtn = e.target.closest('[data-ab-config-save]');
+        if (configSaveBtn) { saveFilterConfig(); return; }
+
+        var savePresetBtn = e.target.closest('[data-ab-save-preset]');
+        if (savePresetBtn) { savePreset(savePresetBtn.getAttribute('data-ab-save-preset')); return; }
 
         var crumb = e.target.closest('[data-ab-crumb]');
         if (crumb) {
